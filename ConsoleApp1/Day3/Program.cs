@@ -8,7 +8,7 @@ namespace ConsoleApp1.Day3
     {
         static void Main()
         {
-            Console.WriteLine("Day 3");
+            Console.WriteLine("Day 3 Gitignore");
         }
     }
 }
