@@ -40,6 +40,8 @@ while(n <= x)
 
 //Mini calculator
 
+using System;
+
 Console.WriteLine("Masukkan angka pertama: ");
 int firstNumber = Convert.ToInt32(Console.ReadLine());
 
