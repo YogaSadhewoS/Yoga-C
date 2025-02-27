@@ -4,11 +4,15 @@ using System;
 public class Hewan {
     public required string Nama {get; set;}
     public int Umur {get; set;}
+    public virtual void suaraHewan() //Polymorphism virtual
+    {
+        Console.WriteLine("Ini suara");
+    }
 }
 
 public class Kucing : Hewan {
     public required string Ras {get; set;}
-    public void Miaw()
+    public override void suaraHewan() //Polymorphism override
     {
         Console.WriteLine("Mew mew");
     }
@@ -20,5 +24,6 @@ class Program
     {
         Kucing myKucing = new Kucing {Nama = "Ethel", Umur = 3, Ras = "Mujaer"};
         Console.WriteLine($"{myKucing.Nama} merupakan kucing ras {myKucing.Ras} yang berumur {myKucing.Umur} tahun");
+        myKucing.suaraHewan();
     }
 }
