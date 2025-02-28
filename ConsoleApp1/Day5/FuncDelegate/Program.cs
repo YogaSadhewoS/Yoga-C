@@ -4,6 +4,7 @@ using System;
 
 class Program
 {
+    /*
     static void Main()
     {
         //Func operasiMatematika ditulis sekali
@@ -18,5 +19,20 @@ class Program
     static int Perkalian(int x, int y)
     {
         return x * y;
+    }*/
+
+    static void Main()
+    {
+        Console.Write("Masukkan angka: ");
+        int input = Convert.ToInt32(Console.ReadLine());
+
+        Func<int, bool> validasiAngka;
+        validasiAngka = Genap;
+        Console.WriteLine($"Bilangan {(validasiAngka(input) ? "Genap" : "Ganjil")}"); 
+    }
+
+    static bool Genap(int x)
+    {
+        return x % 2 == 0;
     }
 }
