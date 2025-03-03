@@ -2,24 +2,37 @@
 
 using System;
 
-public class Alarm
+public class FireAlarmEventArgs : EventArgs
 {
-    //Buat event pakai delegate EventHandler
-    public event EventHandler? OnAlarmRinging;
+    public string SumberApi { get; }
+    public bool Notified { get; }
 
-    public void Ringing()
+    public FireAlarmEventArgs(string sumber, bool notified)
     {
-        Console.WriteLine("Alarm Berbunyi");
-        OnAlarmRinging?.Invoke(this, EventArgs.Empty);
+        SumberApi = sumber;
+        Notified = notified;
     }
 }
 
-//Class Person yang mendengarkan event
+//Event Handler pada Class Alarm
+public class Alarm
+{
+    //Buat event pakai delegate EventHandler
+    public event EventHandler<FireAlarmEventArgs>? OnAlarmRinging;
+
+    public void FireRinging(string sumber, bool notified)
+    {
+        Console.WriteLine($"ALARM KEBAKARAN! Sumber api: {sumber}. Pemadam kebakaran {(notified ? "sudah" : "belum")} diinformasikan");
+        OnAlarmRinging?.Invoke(this, new FireAlarmEventArgs(sumber, notified));
+    }
+}
+
+//Class Person yang mendengarkan event (subscriber)
 public class Person
 {
-    public void AlarmPerson(object? sender, EventArgs e)
+    public void FireAlarmHandler(object? sender, FireAlarmEventArgs e)
     {
-        Console.WriteLine("Event: Alarm sudah berbunyi, tolong segera matikan!");
+        Console.WriteLine($"Peringatan Darurat! Kebakaran terjadi karena {e.SumberApi}! Pemadam kebakaran {(e.Notified ? "sudah" : "belum")} berangkat ke lokasi");
     }
 }
 
@@ -31,9 +44,8 @@ class Program
         Person person = new Person();
 
         //Subscribe ke Event
-        alarm.OnAlarmRinging += person.AlarmPerson;
+        alarm.OnAlarmRinging += person.FireAlarmHandler;
         //Simulasi event
-        alarm.Ringing();
+        alarm.FireRinging("Kompor Gas", true);
     }
-    
 }
