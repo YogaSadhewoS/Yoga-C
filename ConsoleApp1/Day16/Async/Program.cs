@@ -32,8 +32,8 @@ class Program
         return hasil;
     }*/
 
-    //Parallel task
-    static async Task Main()
+    //Parallel task with Task.WhenAll()
+    /*static async Task Main()
     {
         Console.WriteLine("Menyiapkan aplikasi. Mohon tunggu sebentar!");
 
@@ -41,7 +41,7 @@ class Program
         Task konekKeDatabase = ConnectToDatabase();
         Task ngaturCache = CacheInitialization();
 
-        await Task.WhenAll(konfigurasiAplikasi, konekKeDatabase, ngaturCache);
+        await Task.WhenAll(konfigurasiAplikasi, konekKeDatabase, ngaturCache); //Run banyak task barengan
         Console.WriteLine("Aplikasi siap digunakan!");
     }
 
@@ -64,5 +64,33 @@ class Program
         Console.WriteLine("Menginisialisasi cache...");
         await Task.Delay(1000);
         Console.WriteLine("Cache sudah diinisialisasi");
+    }*/
+
+    //Chaining Task with ContinueWith()
+    static void Main()
+    {
+        Random rnd = new Random();
+
+        Task<int> getRandomNumberTask = Task.Run(() =>
+        {
+            int angkaRandom = rnd.Next(1,101);
+            Console.WriteLine($"Angka randomnya adalah: {angkaRandom}");
+            return angkaRandom;
+        });
+
+        Task<int> multiplyByTwo = getRandomNumberTask.ContinueWith(task =>
+        {
+            int hasilKali = task.Result * 2;
+            Console.WriteLine($"Hasil bilangan random dikali 2: {hasilKali}");
+            return hasilKali;
+        });
+
+        Task displayTask = multiplyByTwo.ContinueWith(task =>
+        {
+            Console.WriteLine($"Hasil akhirnya adalah {task.Result}");
+        });
+
+        displayTask.Wait(); //Menunggu semua task selesai baru running code di bawahnya
+        Console.WriteLine("Program selesai");
     }
 }
