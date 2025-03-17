@@ -8,9 +8,6 @@ public enum CellStatus { Empty, Ship, Hit, Miss, Sunk }
 // Enum untuk hasil tembakan
 public enum ShotResult { Hit, Miss, Sunk, AlreadyShot, Invalid }
 
-// Enum untuk mode permainan
-public enum GameMode { SinglePlayer, VersusFriend }
-
 // Interface untuk pemain
 public interface IPlayer {
     string Name { get; }
@@ -45,7 +42,7 @@ public class Board : IBoard {
         PlaceShipsRandomly();
     }
 
-    // Menempatkan kapal secara acak berdasarkan ukuran standar
+    // Menempatkan kapal secara acak sesuai ukuran standar
     private void PlaceShipsRandomly() {
         Dictionary<string, int> shipSizes = new Dictionary<string, int> {
             { "Carrier", 5 },
@@ -111,16 +108,14 @@ public class Board : IBoard {
     }
 
     public bool AreAllShipsSunk() {
-        for (int i = 0; i < Size; i++) {
-            for (int j = 0; j < Size; j++) {
-                if (grid[i, j] == CellStatus.Ship)
-                    return false;
-            }
-        }
+        foreach (var ship in ships)
+            if (!ship.IsSunk())
+                return false;
         return true;
     }
 
-    // Menampilkan papan (menggunakan Console.Clear agar board lama tertimpa)
+    // Menampilkan papan dengan pewarnaan:
+    // Hit (O) = Biru, Miss (X) = Merah, Sunk (S) = Hijau.
     public void DisplayBoard(bool hideShips) {
         Console.Clear();
         Console.Write("    ");
@@ -131,18 +126,17 @@ public class Board : IBoard {
         for (int i = 0; i < Size; i++) {
             Console.Write(i.ToString().PadLeft(2) + "  ");
             for (int j = 0; j < Size; j++) {
-                string symbol = "";
-                if (grid[i, j] == CellStatus.Hit)
-                    symbol = "O";
-                else if (grid[i, j] == CellStatus.Miss)
-                    symbol = "X";
-                else if (grid[i, j] == CellStatus.Sunk)
-                    symbol = "S";
-                else if (!hideShips && grid[i, j] == CellStatus.Ship)
-                    symbol = "S";
-                else
-                    symbol = "|";
+                string symbol = "|";
+                ConsoleColor color = Console.ForegroundColor;
+
+                if (grid[i, j] == CellStatus.Hit) { symbol = "O"; color = ConsoleColor.Blue; }
+                else if (grid[i, j] == CellStatus.Miss) { symbol = "X"; color = ConsoleColor.Red; }
+                else if (grid[i, j] == CellStatus.Sunk) { symbol = "S"; color = ConsoleColor.Green; }
+                else if (!hideShips && grid[i, j] == CellStatus.Ship) { symbol = "S"; color = ConsoleColor.Green; }
+
+                Console.ForegroundColor = color;
                 Console.Write(symbol.PadLeft(2) + " ");
+                Console.ResetColor();
             }
             Console.WriteLine();
         }
@@ -160,11 +154,10 @@ public interface IShip {
 // Implementasi kapal sederhana
 public class Ship : IShip {
     private List<(int, int)> positions;
-    private HashSet<(int, int)> hits;
+    private HashSet<(int, int)> hits = new HashSet<(int, int)>();
 
     public Ship(List<(int, int)> positions) {
         this.positions = positions;
-        this.hits = new HashSet<(int, int)>();
     }
 
     public bool RecordHit(int row, int col) {
@@ -188,95 +181,49 @@ public class Ship : IShip {
     }
 }
 
-// Kelas pengontrol permainan
+// Kelas pengontrol permainan untuk mode Versus Friend
 public class GameController {
-    private GameMode mode;
     private IPlayer player1, player2;
-    private IBoard boardTarget;             // Untuk mode SinglePlayer
-    private IBoard boardPlayer1, boardPlayer2; // Untuk mode VersusFriend
+    private IBoard boardPlayer1, boardPlayer2;
 
-    public GameController(GameMode mode) {
-        this.mode = mode;
-        if (mode == GameMode.SinglePlayer) {
-            player1 = new HumanPlayer("Player");
-            boardTarget = new Board();
-        } else { // VersusFriend
-            // Console.Write("Masukkan nama Player 1: ");
-            // string name1 = Console.ReadLine();
-            // Console.Write("Masukkan nama Player 2: ");
-            // string name2 = Console.ReadLine();
-            // player1 = new HumanPlayer(name1);
-            // player2 = new HumanPlayer(name2);
-            Console.Write("Masukkan nama Player 1 (default: Player 1): ");
-            string name1 = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(name1))
-                name1 = "Player 1";
+    public GameController() {
+        Console.Write("Masukkan nama Player 1 (default: Player 1): ");
+        string name1 = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name1))
+            name1 = "Player 1";
 
-            Console.Write("Masukkan nama Player 2 (default: Player 2): ");
-            string name2 = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(name2))
-                name2 = "Player 2";
+        Console.Write("Masukkan nama Player 2 (default: Player 2): ");
+        string name2 = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(name2))
+            name2 = "Player 2";
 
-            player1 = new HumanPlayer(name1);
-            player2 = new HumanPlayer(name2);
-
-            boardPlayer1 = new Board(); // Papan milik Player 1 (ditebak oleh Player 2)
-            boardPlayer2 = new Board(); // Papan milik Player 2 (ditebak oleh Player 1)
-        }
+        player1 = new HumanPlayer(name1);
+        player2 = new HumanPlayer(name2);
+        boardPlayer1 = new Board();
+        boardPlayer2 = new Board();
     }
 
     public void StartGame() {
-        if (mode == GameMode.SinglePlayer)
-            RunSinglePlayerGame();
-        else
-            RunVersusFriendGame();
-    }
-
-    // Mode bermain sendiri
-    private void RunSinglePlayerGame() {
-        while (true) {
-            boardTarget.DisplayBoard(true);
-            Console.Write("\nMasukkan koordinat (row,col): ");
-            if (TryParseCoordinates(Console.ReadLine(), out int row, out int col)) {
-                ShotResult result = player1.TakeShot((Board)boardTarget, row, col);
-                string message = "";
-                if (result == ShotResult.Hit)
-                    message = "Tembakan mengenai kapal!";
-                else if (result == ShotResult.Miss)
-                    message = "Tembakan meleset!";
-                else if (result == ShotResult.Sunk)
-                    message = "Kapal hancur!";
-                
-                // Tampilkan board dan pesan bersama
-                boardTarget.DisplayBoard(true);
-                Console.WriteLine($"\nHasil tembakan: {result}");
-                Console.WriteLine(message);
-                
-                if (boardTarget.AreAllShipsSunk()) {
-                    Console.WriteLine("\nSelamat, Anda telah menghancurkan semua kapal!");
-                    break;
-                }
-            } else {
-                Console.WriteLine("\nInput tidak valid. Tekan Enter untuk mencoba lagi.");
-                Console.ReadLine();
-            }
-            Thread.Sleep(1500);
-        }
-    }
-
-    // Mode bermain dengan teman
-    private void RunVersusFriendGame() {
         bool player1Turn = true;
         while (true) {
             IPlayer currentPlayer = player1Turn ? player1 : player2;
             IBoard opponentBoard = player1Turn ? boardPlayer2 : boardPlayer1;
-            // Tampilkan papan lawan dan informasi giliran
+            
+            // Tampilkan papan lawan (tanpa menampilkan kapal)
             opponentBoard.DisplayBoard(true);
             Console.WriteLine($"\nGiliran {currentPlayer.Name} - Tebak papan lawan:");
             Console.Write("\nMasukkan koordinat (row,col): ");
+            string input = Console.ReadLine();
             
-            if (TryParseCoordinates(Console.ReadLine(), out int row, out int col)) {
+            if (TryParseCoordinates(input, out int row, out int col)) {
                 ShotResult result = currentPlayer.TakeShot((Board)opponentBoard, row, col);
+                
+                if(result == ShotResult.AlreadyShot) {
+                    Console.WriteLine("\nSel sudah ditembak, silahkan masukkan koordinat lain. Tekan Enter untuk mencoba lagi.");
+                    Console.ReadLine();
+                    continue;
+                }
+                
                 string message = "";
                 if (result == ShotResult.Hit)
                     message = "Tembakan mengenai kapal!";
@@ -284,12 +231,11 @@ public class GameController {
                     message = "Tembakan meleset!";
                 else if (result == ShotResult.Sunk)
                     message = "Kapal hancur!";
-                
-                // Tampilkan board dan pesan bersama
+
                 opponentBoard.DisplayBoard(true);
                 Console.WriteLine($"\n{currentPlayer.Name} menembak -> {result}");
                 Console.WriteLine(message);
-                
+
                 if (opponentBoard.AreAllShipsSunk()) {
                     Console.WriteLine($"\n{currentPlayer.Name} MENANG!");
                     break;
@@ -302,6 +248,8 @@ public class GameController {
             }
             player1Turn = !player1Turn;
         }
+        Console.WriteLine("\nPermainan selesai. Tekan sembarang tombol untuk keluar...");
+        Console.ReadKey();
     }
 
     private bool TryParseCoordinates(string input, out int row, out int col) {
@@ -313,17 +261,10 @@ public class GameController {
     }
 }
 
-// Entry point program
 public class Program {
     public static void Main() {
-        Console.WriteLine("Selamat datang di Battleship!");
-        Console.WriteLine("Pilih mode permainan:");
-        Console.WriteLine("1. Bermain Sendiri");
-        Console.WriteLine("2. Bermain dengan Teman");
-        Console.Write("Pilihan: ");
-        string input = Console.ReadLine();
-        GameMode mode = input == "2" ? GameMode.VersusFriend : GameMode.SinglePlayer;
-        GameController controller = new GameController(mode);
+        Console.WriteLine("Selamat datang di Battleship Versus!");
+        GameController controller = new GameController();
         controller.StartGame();
     }
 }
