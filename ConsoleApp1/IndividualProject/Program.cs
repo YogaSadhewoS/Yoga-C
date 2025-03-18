@@ -256,12 +256,12 @@ namespace BattleshipGame
             Console.Clear();
             Console.Write("    ");
             for (int j = 0; j < size; j++)
-                Console.Write(j.ToString().PadLeft(2) + " ");
+                Console.Write(((char)('A' + j)).ToString().PadLeft(2) + " ");
             Console.WriteLine();
 
             for (int i = 0; i < size; i++)
             {
-                Console.Write(i.ToString().PadLeft(2) + "  ");
+                Console.Write((i + 1).ToString().PadLeft(2) + "  ");
                 for (int j = 0; j < size; j++)
                 {
                     string symbol = "|";
@@ -376,17 +376,37 @@ namespace BattleshipGame
 
                 // Tampilkan papan lawan sebelum tembakan
                 opponentBoard.DisplayBoard(true);
-                Console.WriteLine($"\nGiliran {currentPlayer.Name}. Masukkan koordinat tembakan (row,col): ");
-                string input = Console.ReadLine();
-                var parts = input.Split(',');
-                if (parts.Length != 2 ||
-                    !int.TryParse(parts[0].Trim(), out int row) ||
-                    !int.TryParse(parts[1].Trim(), out int col))
+                // Console.WriteLine($"\nGiliran {currentPlayer.Name}. Masukkan koordinat tembakan (row,col): ");
+                // string input = Console.ReadLine();
+                // var parts = input.Split(',');
+                // if (parts.Length != 2 ||
+                //     !int.TryParse(parts[0].Trim(), out int row) ||
+                //     !int.TryParse(parts[1].Trim(), out int col))
+                // {
+                //     Console.WriteLine("Input tidak valid. Tekan Enter untuk mencoba lagi.");
+                //     Console.ReadLine();
+                //     continue;
+                // }
+                Console.WriteLine($"\nGiliran {currentPlayer.Name}. Masukkan koordinat tembakan (misal A5): ");
+                string input = Console.ReadLine().Trim().ToUpper(); // Ubah ke huruf kapital agar "a5" tetap diterima
+
+                if (input.Length < 2 || !char.IsLetter(input[0]) || !char.IsDigit(input[1]))
                 {
                     Console.WriteLine("Input tidak valid. Tekan Enter untuk mencoba lagi.");
                     Console.ReadLine();
                     continue;
                 }
+
+                int col = input[0] - 'A'; // Konversi huruf ke indeks kolom (A = 0, B = 1, dst.)
+                if (!int.TryParse(input.Substring(1), out int row) || row < 1 || row > boardSize)
+                {
+                    Console.WriteLine("Input tidak valid. Tekan Enter untuk mencoba lagi.");
+                    Console.ReadLine();
+                    continue;
+                }
+
+                row -= 1; // Sesuaikan dengan indeks array (baris mulai dari 1, tapi indeks array 0-based)
+
                 ShotResult result = ProcessShot(row, col);
                 OnShotProcessed?.Invoke(row, col, result);
 
