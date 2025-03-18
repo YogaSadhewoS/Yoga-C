@@ -21,7 +21,7 @@ namespace BattleshipGame
         SHIP,
         HIT,
         MISS,
-        SUNK
+        SUNK //Ditambah untuk keperluan visual
     }
 
     public enum Orientation
@@ -61,7 +61,7 @@ namespace BattleshipGame
         private Dictionary<string, Dictionary<string, int>> statistics;
 
         public string Name => name;
-        public string Id => id;
+        // public string Id => id; //Menyimpan id pemain di luar game
 
         public Player(string name)
         {
@@ -69,7 +69,7 @@ namespace BattleshipGame
             this.id = Guid.NewGuid().ToString();
             statistics = new Dictionary<string, Dictionary<string, int>>();
         }
-
+        
         public void UpdateStatistic(string gameType, string stat, int value)
         {
             if (!statistics.ContainsKey(gameType))
@@ -104,7 +104,7 @@ namespace BattleshipGame
         private Orientation orientation;
         private bool[] hitArray;
 
-        public ShipType Type => type;
+        // public ShipType Type => type;
         public int Size => (int)type;
 
         public Ship(ShipType type)
@@ -167,7 +167,6 @@ namespace BattleshipGame
         IShip GetShipAt(int row, int column);
         bool IsPositionValid(int row, int column);
         IReadOnlyList<IShip> GetAllShips();
-        ShotResult ProcessShot(int row, int column);
         void DisplayBoard(bool hideShips);
     }
 
@@ -248,35 +247,6 @@ namespace BattleshipGame
         public IReadOnlyList<IShip> GetAllShips()
         {
             return ships.AsReadOnly();
-        }
-
-        public ShotResult ProcessShot(int row, int column)
-        {
-            if (!IsPositionValid(row, column))
-                return ShotResult.INVALID;
-
-            if (cellStatus[row, column] == CellStatus.HIT || cellStatus[row, column] == CellStatus.MISS || cellStatus[row, column] == CellStatus.SUNK)
-                return ShotResult.ALREADY_SHOT;
-
-            if (cellStatus[row, column] == CellStatus.SHIP)
-            {
-                IShip ship = cellShips[row, column];
-                if (ship.RecordHit(row, column))
-                {
-                    SetCellStatus(row, column, CellStatus.HIT);
-                    if (ship.IsSunk())
-                    {
-                        // Tandai seluruh sel kapal sebagai HIT (atau bisa diberi status SUNK jika diinginkan)
-                        foreach (var pos in ship.GetOccupiedPositions())
-                            SetCellStatus(pos.Item1, pos.Item2, CellStatus.SUNK);
-                        return ShotResult.SUNK;
-                    }
-                    return ShotResult.HIT;
-                }
-            }
-
-            SetCellStatus(row, column, CellStatus.MISS);
-            return ShotResult.MISS;
         }
 
         // Tampilan papan dengan pewarnaan:
@@ -417,7 +387,7 @@ namespace BattleshipGame
                     Console.ReadLine();
                     continue;
                 }
-                ShotResult result = opponentBoard.ProcessShot(row, col);
+                ShotResult result = ProcessShot(row, col);
                 OnShotProcessed?.Invoke(row, col, result);
 
                 if (result == ShotResult.ALREADY_SHOT)
@@ -448,6 +418,7 @@ namespace BattleshipGame
             return false;
         }
 
+        //Untuk menambahkan fitur kapal secara manual, penempatan sudah otomatis di InitializeGame()
         public bool PlaceShip(IPlayer player, ShipType type, int row, int column, Orientation orientation)
         {
             IBoard board = boards[player];
@@ -462,9 +433,39 @@ namespace BattleshipGame
 
         public ShotResult ProcessShot(int row, int column)
         {
-            IPlayer opponent = playerOrder[(currentPlayerIndex + 1) % playerOrder.Count];
-            return boards[opponent].ProcessShot(row, column);
+            IPlayer currentPlayer = playerOrder[currentPlayerIndex]; // Pemain yang sedang menembak
+            IPlayer opponent = playerOrder[(currentPlayerIndex + 1) % playerOrder.Count]; // Lawan yang ditembak
+            IBoard opponentBoard = boards[opponent]; // Papan lawan
+
+            if (!opponentBoard.IsPositionValid(row, column))
+                return ShotResult.INVALID;
+
+            CellStatus cellStatus = opponentBoard.GetCellStatus(row, column);
+
+            if (cellStatus == CellStatus.HIT || cellStatus == CellStatus.MISS || cellStatus == CellStatus.SUNK)
+                return ShotResult.ALREADY_SHOT;
+
+            if (cellStatus == CellStatus.SHIP)
+            {
+                IShip ship = opponentBoard.GetShipAt(row, column);
+                if (ship.RecordHit(row, column))
+                {
+                    opponentBoard.SetCellStatus(row, column, CellStatus.HIT);
+                    if (ship.IsSunk())
+                    {
+                        foreach (var pos in ship.GetOccupiedPositions())
+                            opponentBoard.SetCellStatus(pos.Item1, pos.Item2, CellStatus.SUNK);
+                        return ShotResult.SUNK;
+                    }
+                    return ShotResult.HIT;
+                }
+            }
+
+            opponentBoard.SetCellStatus(row, column, CellStatus.MISS);
+            return ShotResult.MISS;
         }
+
+
 
         public void SwitchTurn()
         {
@@ -489,11 +490,13 @@ namespace BattleshipGame
             return playerOrder[currentPlayerIndex];
         }
 
+        //Tidak mengembalikan papan pemain tertentu
         public IBoard GetPlayerBoard(IPlayer player)
         {
             return boards[player];
         }
 
+        //Tidak mengembalikan daftar kapal milik pemain
         public IReadOnlyList<IShip> GetPlayerShips(IPlayer player)
         {
             return playerShips[player].AsReadOnly();
@@ -510,6 +513,7 @@ namespace BattleshipGame
             this.controller = controller;
         }
 
+        //DisplayBoard() sudah menampilkan status papan & giliran pemain
         public void RenderGameState(Dictionary<IPlayer, IBoard> boards, IPlayer currentPlayer)
         {
             Console.WriteLine($"Giliran: {currentPlayer.Name}");
@@ -520,17 +524,20 @@ namespace BattleshipGame
             }
         }
 
+        //Tidak menampilkan papan milik pemain tertentu
         public void RenderPlayerBoard(IPlayer player, IBoard board, bool hideShips)
         {
             Console.WriteLine($"Papan {player.Name}:");
             board.DisplayBoard(hideShips);
         }
 
+        //Sudah diatur GameController dalam menampilkan pesan
         public void DisplayMessage(string message)
         {
             Console.WriteLine(message);
         }
 
+        //Jika nantinya ingin memasukkan kapal secara manual
         public (ShipType, int, int, Orientation) GetPlacementInput()
         {
             Console.WriteLine("Masukkan jenis kapal (0: CARRIER, 1: BATTLESHIP, 2: CRUISER, 3: SUBMARINE, 4: DESTROYER): ");
@@ -548,6 +555,7 @@ namespace BattleshipGame
             return (type, row, col, orientation);
         }
 
+        //Sudah ditangani di StartGame()
         public (int, int) GetShotInput()
         {
             Console.WriteLine("Masukkan koordinat tembakan (row,col): ");
