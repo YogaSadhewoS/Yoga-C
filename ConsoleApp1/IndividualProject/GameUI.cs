@@ -109,7 +109,7 @@ namespace BattleshipGame
         }
 
         // Memulai loop permainan dengan menginisialisasi game dan memulai game.
-        public void StartGameLoop()
+        public void StartGameLoop() //Revisi: pindah readline & writeline dari gamecontroller ke gameUI biar cuma pass data
         {
             controller.InitializeGame(10, 2);
             controller.StartGame();

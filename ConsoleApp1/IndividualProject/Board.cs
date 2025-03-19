@@ -63,7 +63,7 @@ namespace BattleshipGame
         public CellStatus GetCellStatus(int row, int column)
         {
             if (!IsPositionValid(row, column))
-                throw new ArgumentException("Invalid position");
+                throw new ArgumentException("Invalid position"); //Revisi: Jangan pake throw
             return cellStatus[row, column];
         }
 

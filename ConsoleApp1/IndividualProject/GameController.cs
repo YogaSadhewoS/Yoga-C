@@ -126,7 +126,7 @@ namespace BattleshipGame
                     state = GameState.FINISHED;
                     return true;
                 }
-                Thread.Sleep(2000);
+                Thread.Sleep(2000); //Revisi: pake task aja dan rapikan struktur folder: enum pisah, interface jadi 1 folder dll, hapus komen, ganti indo ke inggris kata-katanya
                 SwitchTurn();
             }
             return false;

@@ -5,6 +5,6 @@ namespace BattleshipGame
         bool RecordHit(int row, int column);
         bool IsSunk();
         bool IsPositionPartOfShip(int row, int column);
-        (int, int)[] GetOccupiedPositions();
+        (int, int)[] GetOccupiedPositions(); //Revisi pakai struct sebaiknya
     }
 }
