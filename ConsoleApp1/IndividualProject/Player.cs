@@ -7,7 +7,6 @@ namespace BattleshipGame
         private Dictionary<string, Dictionary<string, int>> statistics;
 
         public string Name => name;
-        // public string Id => id; //Menyimpan id pemain di luar game
 
         public Player(string name)
         {

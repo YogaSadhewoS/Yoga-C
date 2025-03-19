@@ -4,11 +4,14 @@ namespace BattleshipGame
     {
         private int size;
         private CellStatus[,] cellStatus;
-        private IShip?[,] cellShips;
+
+        // Array dua dimensi yang menyimpan referensi kapal di tiap sel, null jika sel kosong
+        private IShip?[,] cellShips; 
         private List<IShip> ships;
 
         public int Size => size;
 
+        //Inisialisasi papan dengan ukuran tertentu
         public Board(int size)
         {
             this.size = size;
@@ -22,11 +25,13 @@ namespace BattleshipGame
                     cellStatus[i, j] = CellStatus.EMPTY;
         }
 
+        //Cek apakah posisi row column ada di board
         public bool IsPositionValid(int row, int column)
         {
             return row >= 0 && row < size && column >= 0 && column < size;
         }
 
+        // Menempatkan kapal pada papan di posisi dan orientasi tertentu jika semua posisi valid dan kosong
         public bool PlaceShip(IShip ship, int row, int column, Orientation orientation)
         {
             // Cast ship untuk menggunakan method PlaceAt
@@ -54,6 +59,7 @@ namespace BattleshipGame
             return true;
         }
 
+         // Mengembalikan status sel pada posisi (row, column), throw exception jika posisi tidak valid
         public CellStatus GetCellStatus(int row, int column)
         {
             if (!IsPositionValid(row, column))
@@ -61,12 +67,14 @@ namespace BattleshipGame
             return cellStatus[row, column];
         }
 
+        // Mengatur status sel pada posisi tertentu jika posisi valid
         public void SetCellStatus(int row, int column, CellStatus status)
         {
             if (IsPositionValid(row, column))
                 cellStatus[row, column] = status;
         }
 
+        // Mengembalikan kapal yang ditempatkan di posisi tertentu, atau null jika tidak ada
         public IShip? GetShipAt(int row, int column)
         {
             if (IsPositionValid(row, column))
@@ -74,41 +82,10 @@ namespace BattleshipGame
             return null;
         }
 
+        // Mengembalikan daftar read-only dari semua kapal yang ada di papan
         public IReadOnlyList<IShip> GetAllShips()
         {
             return ships.AsReadOnly();
-        }
-
-        // Tampilan papan dengan pewarnaan:
-        // HIT (O) = Biru, MISS (X) = Merah, dan jika tidak disembunyikan, SHIP (S) = Hijau.
-        public void DisplayBoard(bool hideShips)
-        {
-            Console.Clear();
-            Console.Write("    ");
-            for (int j = 0; j < size; j++)
-                Console.Write(((char)('A' + j)).ToString().PadLeft(2) + " ");
-            Console.WriteLine();
-
-            for (int i = 0; i < size; i++)
-            {
-                Console.Write((i + 1).ToString().PadLeft(2) + "  ");
-                for (int j = 0; j < size; j++)
-                {
-                    string symbol = "|";
-                    ConsoleColor color = Console.ForegroundColor;
-
-                    if (cellStatus[i, j] == CellStatus.HIT) { symbol = "O"; color = ConsoleColor.Blue; }
-                    else if (cellStatus[i, j] == CellStatus.MISS) { symbol = "X"; color = ConsoleColor.Red; }
-                    else if (cellStatus[i, j] == CellStatus.SUNK) { symbol = "S"; color = ConsoleColor.Green; }
-                    else if (!hideShips && cellStatus[i, j] == CellStatus.SHIP) { symbol = "|";}
-
-
-                    Console.ForegroundColor = color;
-                    Console.Write(symbol.PadLeft(2) + " ");
-                    Console.ResetColor();
-                }
-                Console.WriteLine();
-            }
         }
     }
 }

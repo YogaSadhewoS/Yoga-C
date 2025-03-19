@@ -8,6 +8,5 @@ namespace BattleshipGame
         IShip? GetShipAt(int row, int column);
         bool IsPositionValid(int row, int column);
         IReadOnlyList<IShip> GetAllShips();
-        void DisplayBoard(bool hideShips);
     }
 }

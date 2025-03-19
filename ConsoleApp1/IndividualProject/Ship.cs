@@ -8,7 +8,6 @@ namespace BattleshipGame
         private Orientation orientation;
         private bool[] hitArray;
 
-        // public ShipType Type => type;
         public int Size => (int)type;
 
         public Ship(ShipType type)

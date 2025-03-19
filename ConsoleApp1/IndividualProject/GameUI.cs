@@ -9,31 +9,34 @@ namespace BattleshipGame
             this.controller = controller;
         }
 
-        //DisplayBoard() sudah menampilkan status papan & giliran pemain
+        // Menampilkan status papan dan giliran pemain dengan menggunakan BoardDisplay.
         public void RenderGameState(Dictionary<IPlayer, IBoard> boards, IPlayer currentPlayer)
         {
             Console.WriteLine($"Giliran: {currentPlayer.Name}");
+            IBoardDisplay boardDisplay = new BoardDisplay(); // gunakan BoardDisplay untuk merender papan
+
             foreach (var kvp in boards)
             {
                 Console.WriteLine($"Papan {kvp.Key.Name}:");
-                kvp.Value.DisplayBoard(true);
+                boardDisplay.RenderBoard(kvp.Value, true);
             }
         }
 
-        //Tidak menampilkan papan milik pemain tertentu
+        // Menampilkan papan pemain tertentu dengan menggunakan BoardDisplay.
         public void RenderPlayerBoard(IPlayer player, IBoard board, bool hideShips)
         {
             Console.WriteLine($"Papan {player.Name}:");
-            board.DisplayBoard(hideShips);
+            IBoardDisplay boardDisplay = new BoardDisplay();
+            boardDisplay.RenderBoard(board, hideShips);
         }
 
-        //Sudah diatur GameController dalam menampilkan pesan
+        // Menampilkan pesan, yang sudah diatur oleh GameController.
         public void DisplayMessage(string message)
         {
             Console.WriteLine(message);
         }
 
-        //Jika nantinya ingin memasukkan kapal secara manual
+        // Jika nantinya ingin memasukkan kapal secara manual.
         public (ShipType, int, int, Orientation) GetPlacementInput()
         {
             Console.WriteLine("Masukkan jenis kapal (0: CARRIER, 1: BATTLESHIP, 2: CRUISER, 3: SUBMARINE, 4: DESTROYER): ");
@@ -79,7 +82,7 @@ namespace BattleshipGame
             return (type, row, col, orientation);
         }
 
-        //Sudah ditangani di StartGame()
+        // Mendapatkan input tembakan dengan validasi input koordinat.
         public (int, int) GetShotInput()
         {
             Console.WriteLine("Masukkan koordinat tembakan (misal A5): ");
@@ -105,6 +108,7 @@ namespace BattleshipGame
             return (row, col);
         }
 
+        // Memulai loop permainan dengan menginisialisasi game dan memulai game.
         public void StartGameLoop()
         {
             controller.InitializeGame(10, 2);

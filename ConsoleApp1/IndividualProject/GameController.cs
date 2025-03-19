@@ -15,6 +15,7 @@ namespace BattleshipGame
 
         private int boardSize;
 
+        //Menginisialisasi koleksi internal dan menetapkan state awal permainan (SETUP)
         public GameController()
         {
             boards = new Dictionary<IPlayer, IBoard>();
@@ -24,14 +25,15 @@ namespace BattleshipGame
             state = GameState.SETUP;
         }
 
+        //Menyiapkan permainan dengan membuat pemain, papan, dan menempatkan kapal secara acak
         public void InitializeGame(int boardSize, int playerCount)
         {
             this.boardSize = boardSize;
-            // Misal untuk permainan 2 pemain
+            // Untuk permainan 2 pemain
             for (int i = 0; i < playerCount; i++)
             {
                 Console.Write($"Masukkan nama Player {i + 1} (default: Player {i + 1}): ");
-                string name = Console.ReadLine();
+                string? name = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(name))
                     name = $"Player {i + 1}";
                 IPlayer player = new Player(name);
@@ -62,6 +64,7 @@ namespace BattleshipGame
             state = GameState.PLAYING;
         }
 
+        //Memulai dan mengelola loop utama permainan hingga kondisi game over tercapai
         public bool StartGame()
         {
             while (!IsGameOver())
@@ -69,11 +72,20 @@ namespace BattleshipGame
                 IPlayer currentPlayer = GetCurrentPlayer();
                 IPlayer opponent = playerOrder[(currentPlayerIndex + 1) % playerOrder.Count];
                 IBoard opponentBoard = boards[opponent];
+                IBoardDisplay boardDisplay = new BoardDisplay();
 
                 // Tampilkan papan lawan sebelum tembakan
-                opponentBoard.DisplayBoard(true);
+                boardDisplay.RenderBoard(opponentBoard, true);
                 Console.WriteLine($"\nGiliran {currentPlayer.Name}. Masukkan koordinat tembakan (misal A5): ");
-                string? input = Console.ReadLine().Trim().ToUpper(); // Ubah ke huruf kapital agar "a5" tetap diterima
+                string? rawInput = Console.ReadLine();
+                if (string.IsNullOrEmpty(rawInput))
+                {
+                    Console.WriteLine("Input tidak valid. Tekan Enter untuk mencoba lagi.");
+                    Console.ReadLine();
+                    continue;
+                }
+                string input = rawInput.Trim().ToUpper(); // Ubah ke huruf kapital agar "a5" tetap diterima
+
 
                 if (input.Length < 2 || !char.IsLetter(input[0]) || !char.IsDigit(input[1]))
                 {
@@ -103,14 +115,10 @@ namespace BattleshipGame
                 }
 
                 // Tampilkan papan yang sudah diperbarui setelah tembakan
-                opponentBoard.DisplayBoard(true);
+                boardDisplay.RenderBoard(opponentBoard, true);
                 char colLetter = (char)('A' + col); // Konversi angka ke huruf
                 Console.WriteLine($"\n{currentPlayer.Name} menembak ke ({colLetter}{row + 1}) -> {result}");
 
-                if (result == ShotResult.SUNK)
-                {
-                    OnShipSunk?.Invoke(null); // Pemicu event untuk kapal
-                }
                 if (IsGameOver())
                 {
                     Console.WriteLine($"\n{currentPlayer.Name} MENANG!");
@@ -137,8 +145,14 @@ namespace BattleshipGame
             return false;
         }
 
+        //Memproses tembakan pada koordinat tertentu di papan lawan dan mengembalikan hasil tembakan (HIT, MISS, SUNK, dll.)
         public ShotResult ProcessShot(int row, int column)
         {
+            if (state != GameState.PLAYING)
+            {
+                return ShotResult.INVALID;
+            }
+        
             IPlayer currentPlayer = playerOrder[currentPlayerIndex]; // Pemain yang sedang menembak
             IPlayer opponent = playerOrder[(currentPlayerIndex + 1) % playerOrder.Count]; // Lawan yang ditembak
             IBoard opponentBoard = boards[opponent]!; // Papan lawan
@@ -153,15 +167,17 @@ namespace BattleshipGame
 
             if (cellStatus == CellStatus.SHIP)
             {
-                IShip ship = opponentBoard.GetShipAt(row, column);
-                if (ship.RecordHit(row, column))
+                IShip? ship = opponentBoard.GetShipAt(row, column);
+                if (ship != null && ship.RecordHit(row, column))
                 {
                     opponentBoard.SetCellStatus(row, column, CellStatus.HIT);
                     if (ship.IsSunk())
                     {
                         foreach (var pos in ship.GetOccupiedPositions())
                             opponentBoard.SetCellStatus(pos.Item1, pos.Item2, CellStatus.SUNK);
-                            OnShipSunk?.Invoke(null);
+                            OnShipSunk?.Invoke(ship);
+                            if (IsGameOver())
+                                state = GameState.FINISHED;
                         return ShotResult.SUNK;
                     }
                     return ShotResult.HIT;
@@ -172,8 +188,7 @@ namespace BattleshipGame
             return ShotResult.MISS;
         }
 
-
-
+        //Mengganti giliran pemain dan memicu event OnTurnChanged untuk memberitahukan perubahan giliran
         public void SwitchTurn()
         {
             currentPlayerIndex = (currentPlayerIndex + 1) % playerOrder.Count;
@@ -192,18 +207,19 @@ namespace BattleshipGame
             return true;
         }
 
+        //Mengembalikan pemain yang saat ini sedang memiliki giliran bermain
         public IPlayer GetCurrentPlayer()
         {
             return playerOrder[currentPlayerIndex];
         }
 
-        //Tidak mengembalikan papan pemain tertentu
+        //Mengembalikan papan pemain tertentu
         public IBoard GetPlayerBoard(IPlayer player)
         {
             return boards[player];
         }
 
-        //Tidak mengembalikan daftar kapal milik pemain
+        //Mengembalikan daftar kapal milik pemain
         public IReadOnlyList<IShip> GetPlayerShips(IPlayer player)
         {
             return playerShips[player].AsReadOnly();

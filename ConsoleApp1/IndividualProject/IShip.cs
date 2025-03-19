@@ -1,6 +1,5 @@
 namespace BattleshipGame
 {
-    // === INTERFACE ISHIP DAN IMPLEMENTASI SHIP ===
     public interface IShip
     {
         bool RecordHit(int row, int column);

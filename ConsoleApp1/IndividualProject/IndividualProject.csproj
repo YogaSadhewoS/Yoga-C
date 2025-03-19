@@ -7,5 +7,20 @@
     <Nullable>enable</Nullable>
     <OutputPath>../bin/</OutputPath>
   </PropertyGroup>
+    <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Enum.cs" />
+    <Compile Include="Player.cs" />
+    <Compile Include="Board.cs" />
+    <Compile Include="IBoard.cs" />
+    <Compile Include="IShip.cs" />
+    <Compile Include="IPlayer.cs" />
+    <Compile Include="Ship.cs" />
+    <Compile Include="ShipFactory.cs" />
+    <Compile Include="GameController.cs" />
+    <Compile Include="GameUI.cs" />
+    <Compile Include="IBoardDisplay.cs" />
+    <Compile Include="BoardDisplay.cs" />
+  </ItemGroup>
 
 </Project>
