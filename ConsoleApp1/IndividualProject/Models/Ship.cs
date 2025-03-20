@@ -1,6 +1,7 @@
-using BattleshipGame.Interface;
+using BattleshipGame.Interfaces;
+using BattleshipGame.Models;
 
-namespace BattleshipGame
+namespace BattleshipGame.Models
 {
     public class Ship : IShip
     {
@@ -18,7 +19,6 @@ namespace BattleshipGame
             hitArray = new bool[(int)type];
         }
 
-        // Menempatkan kapal pada koordinat (row, column) dengan orientasi tertentu
         public void PlaceAt(int row, int column, Orientation orientation)
         {
             this.startRow = row;
@@ -26,21 +26,21 @@ namespace BattleshipGame
             this.orientation = orientation;
         }
 
-        public (int, int)[] GetOccupiedPositions()
+        public Position[] GetOccupiedPositions()
         {
-            var positions = new (int, int)[Size];
+            Position[] positions = new Position[Size];
             for (int i = 0; i < Size; i++)
             {
                 int r = startRow + (orientation == Orientation.VERTICAL ? i : 0);
                 int c = startColumn + (orientation == Orientation.HORIZONTAL ? i : 0);
-                positions[i] = (r, c);
+                positions[i] = new Position(r, c);
             }
             return positions;
         }
 
         public bool IsPositionPartOfShip(int row, int column)
         {
-            return GetOccupiedPositions().Any(pos => pos.Item1 == row && pos.Item2 == column);
+            return GetOccupiedPositions().Any(pos => pos.Row == row && pos.Column == column);
         }
 
         public bool RecordHit(int row, int column)
@@ -48,7 +48,7 @@ namespace BattleshipGame
             var positions = GetOccupiedPositions();
             for (int i = 0; i < positions.Length; i++)
             {
-                if (positions[i].Item1 == row && positions[i].Item2 == column)
+                if (positions[i].Row == row && positions[i].Column == column)
                 {
                     hitArray[i] = true;
                     return true;

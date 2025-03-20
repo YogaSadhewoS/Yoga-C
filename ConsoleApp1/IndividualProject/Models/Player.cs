@@ -1,22 +1,26 @@
-using BattleshipGame.Interface;
+using BattleshipGame.Interfaces;
 
-namespace BattleshipGame
+namespace BattleshipGame.Models
 {
     public class Player : IPlayer
     {
-        private string name;
+        public string Name { get; private set; }
+
         private string id;
         private Dictionary<string, Dictionary<string, int>> statistics;
 
-        public string Name => name;
-
         public Player(string name)
         {
-            this.name = name;
-            this.id = Guid.NewGuid().ToString();
+            Name = name;
+            id = Guid.NewGuid().ToString();
             statistics = new Dictionary<string, Dictionary<string, int>>();
         }
         
+        public void SetName(string newName)
+        {
+            Name = newName;
+        }
+
         public void UpdateStatistic(string gameType, string stat, int value)
         {
             if (!statistics.ContainsKey(gameType))

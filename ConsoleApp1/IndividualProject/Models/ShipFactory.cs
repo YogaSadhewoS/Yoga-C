@@ -1,8 +1,7 @@
-using BattleshipGame.Interface;
+using BattleshipGame.Interfaces;
 
-namespace BattleshipGame
+namespace BattleshipGame.Models
 {
-    // === SHIP FACTORY ===
     public class ShipFactory
     {
         public IShip CreateShip(ShipType type)

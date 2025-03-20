@@ -1,4 +1,4 @@
-namespace BattleshipGame.Interface
+namespace BattleshipGame.Interfaces
 {
     public interface IPlayer
     {

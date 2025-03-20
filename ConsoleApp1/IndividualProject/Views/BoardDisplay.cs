@@ -1,14 +1,13 @@
-using BattleshipGame.Interface;
+using BattleshipGame.Interfaces;
+using BattleshipGame.Models;
 
-namespace BattleshipGame
+namespace BattleshipGame.Views
 {
-    // Kelas BoardDisplay mengimplementasikan IBoardDisplay untuk merender tampilan papan ke konsol.
     public class BoardDisplay : IBoardDisplay
     {
         public void RenderBoard(IBoard board, bool hideShips)
         {
             Console.Clear();
-            // Asumsikan board adalah instance dari Board untuk mendapatkan ukuran.
             int size = (board is Board b) ? b.Size : 10;
             Console.Write("    ");
             for (int j = 0; j < size; j++)

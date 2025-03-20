@@ -1,19 +1,16 @@
-using BattleshipGame.Interface;
+using BattleshipGame.Interfaces;
 
-namespace BattleshipGame
+namespace BattleshipGame.Models
 {
     public class Board : IBoard
     {
         private int size;
         private CellStatus[,] cellStatus;
-
-        // Array dua dimensi yang menyimpan referensi kapal di tiap sel, null jika sel kosong
         private IShip?[,] cellShips; 
         private List<IShip> ships;
 
         public int Size => size;
 
-        //Inisialisasi papan dengan ukuran tertentu
         public Board(int size)
         {
             this.size = size;
@@ -21,22 +18,18 @@ namespace BattleshipGame
             cellShips = new IShip?[size, size];
             ships = new List<IShip>();
 
-            // Inisialisasi semua sel sebagai EMPTY
             for (int i = 0; i < size; i++)
                 for (int j = 0; j < size; j++)
                     cellStatus[i, j] = CellStatus.EMPTY;
         }
 
-        //Cek apakah posisi row column ada di board
         public bool IsPositionValid(int row, int column)
         {
             return row >= 0 && row < size && column >= 0 && column < size;
         }
 
-        // Menempatkan kapal pada papan di posisi dan orientasi tertentu jika semua posisi valid dan kosong
         public bool PlaceShip(IShip ship, int row, int column, Orientation orientation)
         {
-            // Cast ship untuk menggunakan method PlaceAt
             Ship s = ship as Ship;
             if (s == null)
                 return false;
@@ -44,24 +37,21 @@ namespace BattleshipGame
             s.PlaceAt(row, column, orientation);
             var positions = s.GetOccupiedPositions();
 
-            // Validasi setiap posisi
-            foreach (var pos in positions)
+            foreach (var pos in s.GetOccupiedPositions())
             {
-                if (!IsPositionValid(pos.Item1, pos.Item2) || cellStatus[pos.Item1, pos.Item2] != CellStatus.EMPTY)
+                if (!IsPositionValid(pos.Row, pos.Column) || cellStatus[pos.Row, pos.Column] != CellStatus.EMPTY)
                     return false;
             }
 
-            // Tempatkan kapal pada papan
-            foreach (var pos in positions)
+            foreach (var pos in s.GetOccupiedPositions())
             {
-                cellStatus[pos.Item1, pos.Item2] = CellStatus.SHIP;
-                cellShips[pos.Item1, pos.Item2] = ship;
+                cellStatus[pos.Row, pos.Column] = CellStatus.SHIP;
+                cellShips[pos.Row, pos.Column] = ship;
             }
             ships.Add(ship);
             return true;
         }
 
-         // Mengembalikan status sel pada posisi (row, column), throw exception jika posisi tidak valid
         public CellStatus GetCellStatus(int row, int column)
         {
             if (!IsPositionValid(row, column))
@@ -69,14 +59,12 @@ namespace BattleshipGame
             return cellStatus[row, column];
         }
 
-        // Mengatur status sel pada posisi tertentu jika posisi valid
         public void SetCellStatus(int row, int column, CellStatus status)
         {
             if (IsPositionValid(row, column))
                 cellStatus[row, column] = status;
         }
 
-        // Mengembalikan kapal yang ditempatkan di posisi tertentu, atau null jika tidak ada
         public IShip? GetShipAt(int row, int column)
         {
             if (IsPositionValid(row, column))
@@ -84,7 +72,6 @@ namespace BattleshipGame
             return null;
         }
 
-        // Mengembalikan daftar read-only dari semua kapal yang ada di papan
         public IReadOnlyList<IShip> GetAllShips()
         {
             return ships.AsReadOnly();
