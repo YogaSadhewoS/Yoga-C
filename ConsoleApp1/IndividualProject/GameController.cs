@@ -1,3 +1,5 @@
+using BattleshipGame.Interface;
+
 namespace BattleshipGame
 {
     public class GameController

@@ -1,3 +1,5 @@
+using BattleshipGame.Interface;
+
 namespace BattleshipGame
 {
     // Kelas BoardDisplay mengimplementasikan IBoardDisplay untuk merender tampilan papan ke konsol.

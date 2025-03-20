@@ -1,3 +1,5 @@
+using BattleshipGame.Interface;
+
 namespace BattleshipGame
 {
     // Interface untuk menangani tampilan papan permainan.

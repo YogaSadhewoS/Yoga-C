@@ -1,4 +1,4 @@
-namespace BattleshipGame
+namespace BattleshipGame.Interface
 {
     public interface IBoard
     {
