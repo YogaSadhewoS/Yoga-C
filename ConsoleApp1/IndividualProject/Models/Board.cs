@@ -1,4 +1,5 @@
 using BattleshipGame.Interfaces;
+using BattleshipGame.Enums;
 
 namespace BattleshipGame.Models
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using BattleshipGame.Interfaces;
 using BattleshipGame.Models;
+using BattleshipGame.Enums;
 
 namespace BattleshipGame.Controllers
 {

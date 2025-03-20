@@ -1,5 +1,6 @@
 using BattleshipGame.Interfaces;
 using BattleshipGame.Models;
+using BattleshipGame.Enums;
 
 namespace BattleshipGame.Views
 {

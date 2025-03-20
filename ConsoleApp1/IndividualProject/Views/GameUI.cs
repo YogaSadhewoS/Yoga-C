@@ -4,6 +4,7 @@ using System.Threading;
 using BattleshipGame.Interfaces;
 using BattleshipGame.Controllers;
 using BattleshipGame.Models;
+using BattleshipGame.Enums;
 
 namespace BattleshipGame.Views
 {
