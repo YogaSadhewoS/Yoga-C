@@ -55,7 +55,10 @@ namespace BattleshipGame.Models
         public CellStatus GetCellStatus(int row, int column)
         {
             if (!IsPositionValid(row, column))
-                throw new ArgumentException("Invalid position"); //Revisi: Jangan pake throw
+            {
+                Console.WriteLine("Warning: Position is invalid.");
+                return CellStatus.EMPTY;
+            }
             return cellStatus[row, column];
         }
 
